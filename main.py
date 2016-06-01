@@ -13,9 +13,14 @@ import vk
 import requests
 import shutil
 import os
+import json
 
 
-PATH_TO_SAVE_FILES = 'D:\\vkmusic'
+with open('settings.json') as f:
+    jf = json.load(f)
+    global PATH_TO_SAVE_FILES, ACCESS_TOKEN
+    PATH_TO_SAVE_FILES = jf['PATH_TO_SAVE_FILES']
+    ACCESS_TOKEN = jf['ACCESS_TOKEN']
 
 
 def to_correct_name(name):
@@ -25,7 +30,7 @@ def to_correct_name(name):
     return name
 
 
-session = vk.Session(access_token='ce815d3f9ff620943c2f2e6f77248289cade0964c5ba36f6ef850d6553e415f1e65599d68ae6f2a1251ca')
+session = vk.Session(access_token=ACCESS_TOKEN)
 api = vk.API(session)
 audio_objects = api.audio.get()
 #audio_objects = api.audio.get(count=30)
@@ -38,11 +43,14 @@ for obj in audio_objects:
 
     if name not in downloaded_files:
         print('-->    %s' % name)
-        resp = requests.get(url, stream=True)
-        if resp.status_code == 200:
-            path = os.path.join(PATH_TO_SAVE_FILES, name)
-            with open(path, 'wb') as f:
-                resp.raw.decode_content = True
-                shutil.copyfileobj(resp.raw, f)
+        try:
+            resp = requests.get(url, stream=True)
+            if resp.status_code == 200:
+                path = os.path.join(PATH_TO_SAVE_FILES, name)
+                with open(path, 'wb') as f:
+                    resp.raw.decode_content = True
+                    shutil.copyfileobj(resp.raw, f)
+        except Exception as e:
+            print('ERROR:\n%s\n%s\n\n' % (name, e))
 
 print('DONE!')
