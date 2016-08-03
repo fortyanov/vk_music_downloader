@@ -36,6 +36,9 @@ audio_objects = api.audio.get()
 #audio_objects = api.audio.get(count=30)
 
 for obj in audio_objects:
+    if not isinstance(obj, dict):
+        continue
+
     url = obj['url'].split('?')[0]
     title = obj['title']
     name = '%s.mp3' % to_correct_name(title)
